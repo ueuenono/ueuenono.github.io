@@ -1,0 +1,146 @@
+body{
+	font-family:"Hiragino Kaku Gothic Pro W3","MS PGothic",verdana,arial,sans-serif;
+	font-size:120%;
+	color:;
+	background-color:#CCFFFF;
+	margin-left:;
+	text-align:center;
+}
+
+div.mysights{
+	margin-left:8em;
+}
+div.mysights:after{
+	clear:both;
+}
+h1{
+	font-size:200%;
+	color:;
+	background-color:FF99FF;
+	text-align:center;
+	margin:0px;
+	padding:1px;
+}
+h3 a{
+	margin-top:-10ex;
+	padding-top:10ex;
+}
+th{
+	font-size:90%;
+	color:;
+	background-color:#66CCFF;
+	text-align:center;
+	vertical-align:;
+}
+
+img{
+	border:solid;
+	border-width:2px 6px 6px 2px;
+	border-top-color:mediumslateblue;
+	border-right-color:darkslateblue;
+	border-bottom-color:darkslateblue;
+	border-left-color:mediumslateblue;
+}	
+li img{
+	float:left;
+	max-width:200px;
+	max-height:150px;
+}
+li table{
+	margin-left:200px;
+	height:150px;
+}
+li table:after{
+	clear:both;
+}
+ul.sights{
+	list-style-type:none;
+	padding:0px 10px 0px 10px;
+}
+ul.sights li{
+	padding:auto;
+	background-color:#CCFFFF;
+}
+div.jumpmenu{
+	position:fixed;
+	top:10em;
+	font-size:90%;
+	background-color:;
+	float:center;
+	width:10em;
+}
+div.header{
+	position:fixed;
+	top:0px;
+	left:0px;
+	right:0px;
+}
+div.contents{
+	margin-top:20ex;
+}
+div.hidden{
+	display:none;
+}
+div.show{
+	animation:slideIn 1s ease 0s 1 normal;
+}
+@keyframes slideIn{
+	0% {margin-left:200px ;margin-right:-200px;opacity:0}
+100%{margin-left:0px;margin-right:0px;opacity:1}
+}
+@media screen and (max-width:640px){
+  div.jumpmenu {
+    position: static;
+    width: auto;
+  }
+  div.sights {
+    margin-left: auto;
+  }
+  div.jumpmenu ol {
+    margin: 0px;
+    padding: 0px;
+  }
+  div.jumpmenu li {
+    display: inline-block;
+    text-align:center;
+    padding:1ex;
+    min-width:4em;
+    max-width:8em;
+  }
+}
+@media screen and (max-width:560px){
+	li img{
+		float:none;
+	}
+	li table{
+		margin-left:auto;
+	}
+}
+#mode{
+	display:none;
+}
+#toggle{
+	display:none;
+}
+@media screen and (max-height:300px){
+ #headmenu{
+	display:none;
+ }
+ #headmenu.open{
+ 	display:block;
+ }
+ #toggle{ 
+	position:fixed;
+	top:0px;
+	z-index:9;
+	font-size:150%;
+	color:gray;
+	width:1em;
+	height:1em;
+	padding:.5ex;
+	background-color:white;
+	opacity:.7;
+	text-align:left;
+	display:block;
+ }
+}

@@ -1,0 +1,140 @@
+<html lang="ja">
+<head>
+<link href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet"/>
+<meta charset="UTF-8"/>
+<link rel="stylesheet" type="text/css" href="mysights.css"/>
+<script type="text/javascript" src="mytabs.js">//</script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta http-equiv="Content-Script-Type" content="text/javascript">
+<title>fishing info</title>
+</head>
+<body>
+
+<h1>関西の釣果や潮に関する質問</h1>
+
+<p>
+<button id="startButton"><h2>start</h2></button>
+<button id="stopButton"><h2>stop</h2></button>
+</p>
+
+<p>
+<div id="resultOutput"></div>
+</p>
+
+<script>
+// 応答の定義（ハッシュ）    
+var response = {
+	"釣り具":["関西の釣り具やさんのURLを表示します","https://sp.fishing-v.jp/shop/list.php?area=05&submit=1"],
+	"釣り情報":["関西の最新釣り情報のURLを表示します","https://fishingmax.co.jp/fishingpost"],
+	"釣果":["関西の最新釣り情報のURLを表示します","https://fishingmax.co.jp/fishingpost"],
+	"潮,大阪":["大阪の本日の潮見表のURLを表示します","https://www.surf-life.blue/tide_level/%e5%a4%a7%e9%98%aa"],
+	"潮,兵庫":["兵庫の本日の潮見表のURLを表示します","https://www.surf-life.blue/tide_level/%e7%a5%9e%e6%88%b8"],
+	"潮,京都":["京都の本日の潮見表のURLを表示します","https://www.surf-life.blue/tide_level/%e8%88%9e%e9%b6%b4"],
+	"潮,和歌山":["和歌山の本日の潮見表のURLを表示します","https://www.surf-life.blue/tide_level/%e5%92%8c%e6%ad%8c%e5%b1%b1"],
+    "和歌山,天気": ["和歌山県の天気予報のURLを表示します", "https://weather.yahoo.co.jp/weather/jp/30/"],
+    "大阪,天気": ["大阪府の天気予報のURLを表示します", "https://weather.yahoo.co.jp/weather/jp/27/"],
+    "京都,天気": ["京都府の天気予報のURLを表示します", "https://weather.yahoo.co.jp/weather/jp/26/"],
+    "奈良,天気": ["奈良県の天気予報のURL表示します", "https://weather.yahoo.co.jp/weather/jp/29/"],
+    "兵庫,天気": ["兵庫県の天気予報のURL表示します", "https://weather.yahoo.co.jp/weather/jp/28/"],
+	"近畿,天気": ["近畿の天気予報のURL表示します", ""]
+};
+
+const startButton = document.querySelector('#startButton'); // 開始ボタン
+const stopButton = document.querySelector('#stopButton'); // 停止ボタン
+const resultOutput = document.querySelector('#resultOutput'); // 結果出力エリア
+
+if (!'SpeechSynthesisUtterance' in window) {
+    alert("あなたのブラウザはSpeech Synthesis APIに未対応です。");
+}
+const tts = new SpeechSynthesisUtterance(); // TTSインスタンスを生成
+//tts.text = textForm.value; // テキストを設定
+tts.lang = "ja-JP"; // 言語(日本語)、英語の場合はen-US
+tts.rate = 1.0; // 速度
+tts.pitch = 1.0; // 声の高さ
+tts.volume = 1.0; // 音量
+
+SpeechRecognition = webkitSpeechRecognition || SpeechRecognition;
+if (!'SpeechRecognition' in window) {
+    alert("あなたのブラウザはSpeech Recognition APIに未対応です。");
+}
+
+const asr = new SpeechRecognition(); // ASRインスタンスを生成
+asr.lang = "ja-JP"; // 言語（日本語）
+asr.interimResults = true; // 途中結果出力をオン
+asr.continuous = true; // 継続入力をオン
+
+let output = ''; // 出力
+
+// 認識結果が出力されたときのイベントハンドラ
+asr.onresult = function(event){
+    let transcript = event.results[event.resultIndex][0].transcript; // 結果文字列
+
+    let output_not_final = '';
+    if (event.results[event.resultIndex].isFinal) { // 結果が確定（Final）のとき
+	    asr.abort(); // 音声認識を停止
+	    let ret = response[transcript];
+
+        let answer;
+		
+		let keys = Object.keys(response);
+        keys.forEach(function(key) {
+            let flag = true;
+            console.log(transcript);
+            key.split(',').forEach(function(word) {              
+                let pattern = new RegExp(word);
+                let flag_test = pattern.test(transcript); // マッチしたらtrue, しなかったらfalse
+                flag = flag && flag_test; // 両方trueならtrue
+                console.log(pattern + '+' + ':' + flag_test);
+                //flag = flag && new RegExp(word).test(transcript);
+            });
+
+            if(flag){
+		        answer = response[key];
+                console.log(key + " : " + answer);
+            }
+        });
+		
+        let webpage;
+        
+        if(typeof answer == 'undefined'){
+	        answer = "ごめんなさい。わかりません。";
+    	}
+		if(typeof ret !='undefined'){
+            answer = ret[0];
+            webpage = ret[1];
+        }
+
+        output += transcript + ' => ' + answer + '<br>';
+
+	    tts.text = answer;
+	    // 再生が終了（end）ときのイベントハンドラ（終了したときに実行される）
+	    tts.onend = function(event){
+            if(typeof webpage != 'undefined'){
+                location.href = webpage; // ページを移動
+            }   
+            asr.start(); // 音声認識を再開 
+	    }
+
+	    speechSynthesis.speak(tts); // 再生
+    } else { // 結果がまだ未確定のとき
+        output_not_final = '<span style="color:#ddd;">' + transcript + '</span>';
+    }
+    resultOutput.innerHTML = output + output_not_final;
+}
+
+// 開始ボタンのイベントハンドラ
+startButton.addEventListener('click', function() {
+    asr.start();
+})
+
+// 停止ボタンのイベントハンドラ
+stopButton.addEventListener('click', function() {
+    asr.abort();
+    asr.stop();
+})
+</script>
+
+</body>
+</html>
